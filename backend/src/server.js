@@ -2,11 +2,14 @@
 "use strict";
 
 require("dotenv").config();
+const cors = require("cors");
 
 const app = require("./app");
 const pool = require("./config/database");
 
-const PORT = Number(process.env.PORT || 3000);
+app.use(cors());
+
+const PORT = Number(process.env.PORT || 8080);
 const PRODUCAO = process.env.NODE_ENV === "production";
 
 async function iniciarServidor() {

@@ -22,13 +22,7 @@ COPY --chown=node:node js/ ./js/
 COPY --chown=node:node *.html ./
 COPY --chown=node:node manifest.webmanifest service-worker.js ./
 
-# Obs: Não copiamos backend/.env pois variáveis de ambiente 
-# devem ser injetadas diretamente nas configurações do Cloud Run.
-
 USER node
 EXPOSE 8080
-
-# Removido o HEALTHCHECK complexo, pois o Cloud Run ignora o HEALTHCHECK 
-# do Docker e faz a sua própria verificação na porta exposta.
 
 CMD ["node", "backend/src/server.js"]
