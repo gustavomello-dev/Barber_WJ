@@ -138,6 +138,7 @@ app.use(
     store: new pgSession({
       pool,
       tableName: "user_sessions",
+      schemaName: process.env.SESSION_SCHEMA || "public",
       createTableIfMissing: true
     }),
 

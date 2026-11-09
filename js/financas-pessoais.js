@@ -3334,7 +3334,7 @@ document.addEventListener("DOMContentLoaded", async () => {
      AUTENTICAÇÃO E INICIALIZAÇÃO
   ===================================================== */
 
-  // O seletor funciona mesmo enquanto os dados financeiros carregam.
+
   monthInput.value = mesAtual();
   sincronizarSeletorPeriodo();
 

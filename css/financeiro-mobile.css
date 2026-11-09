@@ -16,11 +16,6 @@
   overflow-wrap: anywhere;
 }
 
-/* =====================================================
-   BOTÃO OFICIAL DO WHATSAPP
-   FUNCIONA NO COMPUTADOR E NO CELULAR
-===================================================== */
-
 .finance-table .table-actions .whatsapp-action {
   display: inline-flex;
   align-items: center;

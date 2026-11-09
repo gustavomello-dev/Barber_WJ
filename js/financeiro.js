@@ -1300,8 +1300,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         lista.length === 1 ? "" : "ões"
       }`;
 
-    // Atualiza somente os ícones Lucide.
-    // O SVG do WhatsApp já está pronto no HTML.
     atualizarIcones();
   }
 

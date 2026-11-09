@@ -1,52 +1,76 @@
+"use strict";
 
 require("dotenv").config();
 
-const readline = require("readline");
+const readline = require("node:readline");
+const { Writable } = require("node:stream");
 const argon2 = require("argon2");
-
 const pool = require("../config/database");
+
+let ocultar = false;
+
+const saida = new Writable({
+  write(texto, encoding, callback) {
+    if (!ocultar) {
+      process.stdout.write(texto, encoding);
+    }
+
+    callback();
+  }
+});
 
 const terminal = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: saida,
+  terminal: true
 });
 
-function perguntar(pergunta) {
-  return new Promise((resolve) => {
-    terminal.question(pergunta, resolve);
+function perguntar(mensagem, secreto = false) {
+  return new Promise(resolve => {
+    if (secreto) {
+      process.stdout.write(mensagem);
+      ocultar = true;
+    }
+
+    terminal.question(secreto ? "" : mensagem, resposta => {
+      ocultar = false;
+
+      if (secreto) {
+        process.stdout.write("\n");
+      }
+
+      resolve(resposta);
+    });
   });
 }
 
 async function criarAdmin() {
   try {
-    console.log("\n=== CRIAR ADMINISTRADOR WJ ===\n");
+    console.log("Cadastro de administrador");
+    console.log("Banco de destino:", process.env.DB_HOST);
 
-    const nome = (await perguntar("Nome: ")).trim();
-    const email = (await perguntar("E-mail: ")).trim().toLowerCase();
-    const senha = await perguntar("Senha (mínimo 12 caracteres): ");
+    const nome = (await perguntar("Nome completo: ")).trim();
+    const usuario = (await perguntar("Usuário de acesso: ")).trim();
+    const email = (await perguntar("E-mail: ")).trim();
+    const senha = await perguntar(
+      "Senha (não aparecerá ao digitar): ",
+      true
+    );
+    const confirmacao = await perguntar(
+      "Confirme a senha: ",
+      true
+    );
 
-    if (!nome || nome.length > 120) {
-      throw new Error("Informe um nome válido.");
-    }
-
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      email.length > 180
-    ) {
-      throw new Error("Informe um e-mail válido.");
+    if (!nome || !usuario || !email) {
+      throw new Error("Preencha nome, usuário e e-mail.");
     }
 
     if (senha.length < 12) {
-      throw new Error("A senha deve ter pelo menos 12 caracteres.");
+      throw new Error("Use uma senha com pelo menos 12 caracteres.");
     }
 
-    const existente = await pool.query(
-      "SELECT id FROM usuarios WHERE LOWER(email) = $1",
-      [email]
-    );
-
-    if (existente.rowCount) {
-      throw new Error("Já existe um usuário com este e-mail.");
+    if (senha !== confirmacao) {
+      throw new Error("As senhas não conferem.");
     }
 
     const senhaHash = await argon2.hash(senha, {
@@ -54,17 +78,22 @@ async function criarAdmin() {
     });
 
     const resultado = await pool.query(
-      `INSERT INTO usuarios
-        (nome, email, senha_hash, perfil)
-       VALUES ($1, $2, $3, 'admin')
-       RETURNING id, nome, email, perfil`,
-      [nome, email, senhaHash]
+      `INSERT INTO public.usuarios
+         (nome, usuario, email, senha_hash, perfil, ativo)
+       VALUES ($1, $2, $3, $4, 'admin', TRUE)
+       RETURNING id, nome, usuario`,
+      [nome, usuario, email, senhaHash]
     );
 
     console.log("\nAdministrador criado com sucesso!");
-    console.log(resultado.rows[0]);
+    console.log("Usuário:", resultado.rows[0].usuario);
   } catch (erro) {
-    console.error("\nErro:", erro.message);
+    if (erro.code === "23505") {
+      console.error("Esse usuário ou e-mail já está cadastrado.");
+    } else {
+      console.error("Falha ao cadastrar:", erro.message);
+    }
+
     process.exitCode = 1;
   } finally {
     terminal.close();

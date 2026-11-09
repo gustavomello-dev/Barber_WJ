@@ -1,12 +1,4 @@
-
 "use strict";
-
-/* =====================================================
-   BARBEARIA WJ — DASHBOARD MOBILE
-
-   Simplifica a visualização no celular.
-   Não altera autenticação, API ou dados financeiros.
-===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   const dashboard = document.querySelector(

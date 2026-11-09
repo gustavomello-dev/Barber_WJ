@@ -1,6 +1,27 @@
 services:
   - type: web
-    name: barbearia-wj-pwa
-    runtime: static
-    buildCommand: echo "Site estático pronto"
-    staticPublishPath: .
+    name: barbearia-wj-propex
+    runtime: node
+    plan: free
+    buildCommand: npm ci --prefix backend --omit=dev
+    startCommand: npm start --prefix backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: '5432'
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: 'true'
+      - key: SESSION_SCHEMA
+        value: wj_private
+      - key: SESSION_SECRET
+        generateValue: true

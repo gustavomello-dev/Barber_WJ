@@ -1,4 +1,3 @@
-
 "use strict";
 
 const WJ = {
@@ -327,16 +326,6 @@ const WJ = {
 
       return false;
     }
-
-    /*
-      PÁGINAS COM LAYOUT PRÓPRIO:
-
-      Minhas Finanças usa pessoal-app.html,
-      que possui sua própria sidebar.
-
-      Não inserir o layout do sistema
-      novamente nessas páginas.
-    */
 
     if (options.layout === false) {
       this.initIcons();
