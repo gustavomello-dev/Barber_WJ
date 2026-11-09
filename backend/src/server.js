@@ -56,7 +56,7 @@ async function iniciarServidor() {
         console.log(`Ambiente: ${
           PRODUCAO ? "Produção" : "Desenvolvimento"
         }`);
-        console.log(`Porta: ${PORT}`);
+        console.log(`Porta: ${PORT}`|| 8080);
 
         if (!PRODUCAO) {
           console.log(

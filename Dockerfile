@@ -21,7 +21,7 @@ COPY --chown=node:node manifest.webmanifest service-worker.js ./
 
 # Nao copie backend/.env: passe os segredos no momento da execucao.
 USER node
-EXPOSE 3000
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD node -e "require('http').get('http://127.0.0.1:' + (process.env.PORT || 8080) + '/api/health', (r) => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"
