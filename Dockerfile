@@ -10,12 +10,14 @@ WORKDIR /app
 COPY --chown=node:node backend/package.json backend/package-lock.json ./backend/
 RUN cd backend && npm ci --omit=dev && npm cache clean --force
 
-# 2. Copia o código fonte do backend, o certificado do Supabase e a pasta database
+# 2. Copia o código fonte do backend e o certificado do Supabase
 COPY --chown=node:node backend/src/ ./backend/src/
-COPY --chown=node:node backend/database/ ./backend/database/
 COPY --chown=node:node backend/supabase-ca.crt ./backend/
 
-# 3. Copia os arquivos estáticos do frontend (arquivos na raiz do projeto)
+# Cria a pasta database vazia internamente para evitar crashs
+RUN mkdir -p backend/database && chown -R node:node backend/database
+
+# 3. Copia os arquivos estáticos do frontend
 COPY --chown=node:node assets/ ./assets/
 COPY --chown=node:node css/ ./css/
 COPY --chown=node:node js/ ./js/
