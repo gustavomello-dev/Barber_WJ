@@ -1,29 +1,34 @@
 # Barbearia WJ / PropeX - Node.js 22 + Express
-# Coloque este arquivo na pasta Barbearia2026_WJ, junto do diretorio backend.
 FROM node:22-bookworm-slim
 
 ENV NODE_ENV=production \
     PORT=8080
 
-# Instala apenas as dependencias de producao do backend.
-WORKDIR /app/backend
-COPY backend/package.json backend/package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
-
-# O Express serve a API e os arquivos do frontend a partir de /app.
 WORKDIR /app
+
+# 1. Copia apenas os arquivos de dependência do backend e instala
+COPY --chown=node:node backend/package.json backend/package-lock.json ./backend/
+RUN cd backend && npm ci --omit=dev && npm cache clean --force
+
+# 2. Copia o código fonte do backend, o certificado do Supabase e a pasta database
 COPY --chown=node:node backend/src/ ./backend/src/
+COPY --chown=node:node backend/database/ ./backend/database/
+COPY --chown=node:node backend/supabase-ca.crt ./backend/
+
+# 3. Copia os arquivos estáticos do frontend (arquivos na raiz do projeto)
 COPY --chown=node:node assets/ ./assets/
 COPY --chown=node:node css/ ./css/
 COPY --chown=node:node js/ ./js/
 COPY --chown=node:node *.html ./
 COPY --chown=node:node manifest.webmanifest service-worker.js ./
 
-# Nao copie backend/.env: passe os segredos no momento da execucao.
+# Obs: Não copiamos backend/.env pois variáveis de ambiente 
+# devem ser injetadas diretamente nas configurações do Cloud Run.
+
 USER node
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD node -e "require('http').get('http://127.0.0.1:' + (process.env.PORT || 8080) + '/api/health', (r) => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"
+# Removido o HEALTHCHECK complexo, pois o Cloud Run ignora o HEALTHCHECK 
+# do Docker e faz a sua própria verificação na porta exposta.
 
 CMD ["node", "backend/src/server.js"]
