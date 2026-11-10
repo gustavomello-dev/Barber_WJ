@@ -1,30 +1,20 @@
-# Barbearia WJ / PropeX - Node.js 22 + Express
-FROM node:22-bookworm-slim
+# Usa uma imagem leve e segura do Node.js
+FROM node:20-alpine
 
-ENV NODE_ENV=production \
-    PORT=8080
-
+# Define o diretório de trabalho no contêiner
 WORKDIR /app
 
-# 1. Copia apenas os arquivos de dependência do backend e instala
-COPY --chown=node:node backend/package.json backend/package-lock.json ./backend/
-RUN cd backend && npm ci --omit=dev && npm cache clean --force
+# Copia os arquivos de dependências
+COPY package*.json ./
 
-# 2. Copia o código fonte do backend e o certificado do Supabase
-COPY --chown=node:node backend/src/ ./backend/src/
-COPY --chown=node:node backend/supabase-ca.crt ./backend/
+# Instala apenas dependências de produção
+RUN npm ci --only=production
 
-# Cria a pasta database vazia internamente para evitar crashs
-RUN mkdir -p backend/database && chown -R node:node backend/database
+# Copia o restante do código do projeto
+COPY . .
 
-# 3. Copia os arquivos estáticos do frontend
-COPY --chown=node:node assets/ ./assets/
-COPY --chown=node:node css/ ./css/
-COPY --chown=node:node js/ ./js/
-COPY --chown=node:node *.html ./
-COPY --chown=node:node manifest.webmanifest service-worker.js ./
-
-USER node
+# Expõe a porta que o Cloud Run usará
 EXPOSE 8080
 
-CMD ["node", "backend/src/server.js"]
+# Inicia a aplicação (ajuste se o seu script de start for diferente)
+CMD ["npm", "start"]
